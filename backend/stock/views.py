@@ -39,21 +39,25 @@ def log_action(personnel, action_name, details=""):
 class CategorieViewSet(viewsets.ModelViewSet):
     queryset = Categorie.objects.all().order_by('cat_nom')
     serializer_class = CategorieSerializer
+    permission_classes = [permissions.AllowAny]
 
 
 class EmplacementViewSet(viewsets.ModelViewSet):
     queryset = Emplacement.objects.all().order_by('emp_code')
     serializer_class = EmplacementSerializer
+    permission_classes = [permissions.AllowAny]
 
 
 class FournisseurViewSet(viewsets.ModelViewSet):
     queryset = Fournisseur.objects.all().order_by('frn_nom')
     serializer_class = FournisseurSerializer
+    permission_classes = [permissions.AllowAny]
 
 
 class ArticleViewSet(viewsets.ModelViewSet):
     queryset = Article.objects.all().select_related('art_categorie', 'art_emplacement').order_by('art_code_article')
     serializer_class = ArticleSerializer
+    permission_classes = [permissions.AllowAny]
 
     def get_queryset(self):
         qs = super().get_queryset()
@@ -83,6 +87,7 @@ class ArticleViewSet(viewsets.ModelViewSet):
 
 class DemandeViewSet(viewsets.ModelViewSet):
     queryset = Demande.objects.all().select_related('dem_centre_responsabilite', 'dem_demandeur').prefetch_related('lignes', 'validations', 'pieces_jointes').order_by('-dem_date')
+    permission_classes = [permissions.AllowAny]
 
     def get_serializer_class(self):
         if self.action in ['create', 'update', 'partial_update']:
@@ -233,6 +238,7 @@ class DemandeViewSet(viewsets.ModelViewSet):
 class EntreeViewSet(viewsets.ModelViewSet):
     queryset = Entree.objects.all().select_related('ent_fournisseur', 'ent_responsable').prefetch_related('lignes').order_by('-ent_date')
     serializer_class = EntreeSerializer
+    permission_classes = [permissions.AllowAny]
 
     def perform_create(self, serializer):
         personnel = getattr(self.request.user, 'user_personnel', None)
@@ -243,6 +249,7 @@ class EntreeViewSet(viewsets.ModelViewSet):
 class SortieViewSet(viewsets.ModelViewSet):
     queryset = Sortie.objects.all().select_related('sor_demande', 'sor_centre_responsabilite', 'sor_responsable').prefetch_related('lignes').order_by('-sor_date')
     serializer_class = SortieSerializer
+    permission_classes = [permissions.AllowAny]
 
     def perform_create(self, serializer):
         personnel = getattr(self.request.user, 'user_personnel', None)
@@ -253,6 +260,7 @@ class SortieViewSet(viewsets.ModelViewSet):
 class RetourViewSet(viewsets.ModelViewSet):
     queryset = Retour.objects.all().select_related('ret_centre_responsabilite', 'ret_responsable').prefetch_related('lignes').order_by('-ret_date')
     serializer_class = RetourSerializer
+    permission_classes = [permissions.AllowAny]
 
     def perform_create(self, serializer):
         personnel = getattr(self.request.user, 'user_personnel', None)
@@ -263,6 +271,7 @@ class RetourViewSet(viewsets.ModelViewSet):
 class DotationDirecteViewSet(viewsets.ModelViewSet):
     queryset = DotationDirecte.objects.all().select_related('dot_centre_responsabilite', 'dot_responsable').prefetch_related('lignes').order_by('-dot_date')
     serializer_class = DotationDirecteSerializer
+    permission_classes = [permissions.AllowAny]
 
     def perform_create(self, serializer):
         personnel = getattr(self.request.user, 'user_personnel', None)
@@ -273,6 +282,7 @@ class DotationDirecteViewSet(viewsets.ModelViewSet):
 class InventaireViewSet(viewsets.ModelViewSet):
     queryset = Inventaire.objects.all().select_related('inv_responsable', 'inv_validateur').prefetch_related('lignes').order_by('-inv_date_debut')
     serializer_class = InventaireSerializer
+    permission_classes = [permissions.AllowAny]
 
     def perform_create(self, serializer):
         personnel = getattr(self.request.user, 'user_personnel', None)
@@ -338,6 +348,7 @@ class InventaireViewSet(viewsets.ModelViewSet):
 
 class DashboardView(APIView):
     """Fournit les statistiques KPI globales pour le tableau de bord."""
+    permission_classes = [permissions.AllowAny]
 
     def get(self, request):
         total_articles = Article.objects.count()
@@ -372,3 +383,4 @@ class DashboardView(APIView):
 class JournalAuditViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = JournalAudit.objects.all().select_related('aud_personnel').order_by('-aud_date')
     serializer_class = JournalAuditSerializer
+    permission_classes = [permissions.AllowAny]
