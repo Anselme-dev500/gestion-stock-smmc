@@ -1,0 +1,14 @@
+/* Cohérence de l’espace stock SMMC */
+:root{--smmc-green:#008f50;--smmc-green-dark:#006f40;--smmc-green-light:#e7f6ee;--background:#f4f7f5;--border:#e0e9e3;--radius:15px}
+.smmc-content{background:radial-gradient(circle at 87% 0%,rgba(255,195,42,.08),transparent 26%),#f4f7f5}
+.page-container{max-width:1540px;margin-inline:auto}
+.dashboard-intro{background:linear-gradient(112deg,#064a34,#078557);border-radius:18px;color:white;padding:28px 31px;margin-bottom:22px;box-shadow:0 18px 34px rgba(5,103,62,.12);position:relative;overflow:hidden}
+.dashboard-intro:after{content:"";position:absolute;right:-55px;top:-95px;width:280px;height:280px;border-radius:50%;border:1px solid rgba(255,255,255,.14);box-shadow:0 0 0 55px rgba(255,255,255,.04);pointer-events:none}
+.dashboard-intro .page-header{margin-bottom:0;position:relative;z-index:1}.dashboard-intro .page-title,.dashboard-intro .page-subtitle,.dashboard-intro .page-breadcrumb{color:#fff}.dashboard-intro .page-title{letter-spacing:-.035em}.dashboard-intro .page-breadcrumb{color:#bee8ce}.dashboard-intro .page-subtitle{color:#d6eee1}.dashboard-intro .smmc-btn-primary{background:#ffcb47;color:#173323;border:0;font-weight:750}.dashboard-intro .smmc-btn-primary:hover{background:#ffda78;color:#173323}
+.dashboard-intro-foot{display:flex;gap:24px;align-items:center;position:relative;z-index:1;color:#d8eee1;font-size:12px;margin-top:19px}.dashboard-intro-foot i{color:#ffd564;margin-right:6px}
+.stat-card,.content-card{border:1px solid #e3ebe5;border-radius:15px;box-shadow:0 4px 17px rgba(16,72,43,.045);transition:box-shadow .2s,transform .2s}.stat-card:hover{box-shadow:0 12px 27px rgba(16,72,43,.11);transform:translateY(-2px)}
+.smmc-table tbody tr{transition:background-color .18s}.smmc-table tbody tr:hover{background:#f4faf6}.smmc-btn,.sidebar-link,.topbar-icon-button{transition:background-color .18s,color .18s,transform .18s}.smmc-btn:focus-visible,.sidebar-link:focus-visible,.topbar-icon-button:focus-visible{outline:3px solid #ffc848;outline-offset:2px}
+@media(max-width:760px){.dashboard-intro{padding:24px 20px}.dashboard-intro-foot{flex-wrap:wrap;gap:9px 20px}}
+
+/* Toutes les pages métier partagent ces repères visuels. */
+.smmc-page:not(:has(.dashboard-intro))>.page-header{border-bottom:1px solid #dfe9e2;padding-bottom:20px;margin-bottom:23px}.page-breadcrumb{text-transform:uppercase;letter-spacing:.075em;font-size:11px;font-weight:700;color:#48876a}.page-title{letter-spacing:-.035em}.content-card-header h2{letter-spacing:-.025em}.form-group input:focus,.form-group select:focus,.smmc-search input:focus{outline:2px solid rgba(0,143,80,.26);outline-offset:1px}.topbar-profile strong,.sidebar-profile strong{max-width:170px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}

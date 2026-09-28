@@ -1,39 +1,59 @@
-import type { ReactNode } from "react";
+import {
+  useEffect,
+  useState,
+} from "react";
+
+import {
+  Outlet,
+  useLocation,
+} from "react-router-dom";
 
 import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
 
-interface AdminLayoutProps {
-  children: ReactNode;
-}
+export default function AdminLayout() {
 
-export default function AdminLayout({
-  children,
-}: AdminLayoutProps) {
+  const [sidebarOpen, setSidebarOpen] =
+    useState(true);
+
+  const location = useLocation();
+
+  useEffect(() => {
+    if (window.innerWidth <= 991) {
+      setSidebarOpen(false);
+    }
+  }, [location.pathname]);
+
   return (
-    <div className="d-flex min-vh-100">
+    <div className="smmc-app">
 
-      {/* SIDEBAR */}
-      <Sidebar />
+      <Sidebar
+        isOpen={sidebarOpen}
+        onClose={() =>
+          window.innerWidth <= 991 &&
+          setSidebarOpen(false)
+        }
+      />
 
-      {/* CONTENU PRINCIPAL */}
-      <div className="flex-grow-1">
+      <div className="smmc-main">
 
-        {/* TOPBAR */}
-        <Topbar />
+        <Topbar
+          onMenuClick={() =>
+            setSidebarOpen(
+              !sidebarOpen
+            )
+          }
+        />
 
-        {/* CONTENU */}
-        <main
-          className="p-4 bg-light"
-          style={{
-            minHeight: "calc(100vh - 64px)",
-          }}
-        >
-          {children}
+        <main className="smmc-content">
+
+          <div className="page-container">
+            <Outlet />
+          </div>
+
         </main>
 
       </div>
-
     </div>
   );
 }

@@ -11,6 +11,29 @@ class RoleStock(models.TextChoices):
     CHEF_SERVICE = "chef_service", "Chef de service"
 
 
+def default_stock_settings():
+    return {
+        "seuil_defaut": 5,
+        "prefixes": {"ART": "ART", "ENT": "ENT", "SOR": "SOR", "RET": "RET", "DOT": "DOT", "INV": "INV"},
+        "devise": "MGA", "format_rapport": "pdf", "duree_session_minutes": 60,
+        "longueur_mot_de_passe": 8,
+    }
+
+
+class StockConfiguration(models.Model):
+    """Singleton containing settings restricted to the Django super administrator."""
+    id = models.PositiveSmallIntegerField(primary_key=True, default=1, editable=False)
+    valeurs = models.JSONField(default=default_stock_settings)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def save(self, *args, **kwargs):
+        self.id = 1
+        return super().save(*args, **kwargs)
+
+    class Meta:
+        db_table = "stock_configuration"
+
+
 class StockProfil(models.Model):
     """Rôle applicatif du module Stock, attaché à une fiche Personnel existante."""
     pst_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

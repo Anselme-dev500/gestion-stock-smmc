@@ -1,0 +1,46 @@
+# Secrets
+.env
+**/.env
+!.env.example
+!**/.env.example
+
+# Python
+__pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Environnements Python
+venv/
+.venv/
+env/
+
+# Django
+db.sqlite3
+*.sqlite3
+media/
+staticfiles/
+
+# Node / React / Ionic
+node_modules/
+**/node_modules/
+dist/
+**/dist/
+build/
+
+# Fichiers temporaires
+.tmp-profil-parametres/
+.tmp-*/
+tmp/
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# Windows
+Thumbs.db
+Desktop.ini

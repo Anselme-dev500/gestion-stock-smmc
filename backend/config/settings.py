@@ -12,30 +12,48 @@ https://docs.djangoproject.com/en/6.1/ref/settings/
 
 import os
 from pathlib import Path
+
 from dotenv import load_dotenv
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
+# ============================================================
+# BASE DIR
+# ============================================================
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Charge les variables du fichier .env (backend/.env)
+
+# ============================================================
+# ENVIRONNEMENT
+# ============================================================
+
+# Charge backend/.env
 load_dotenv(BASE_DIR / ".env")
 
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/6.1/howto/deployment/checklist/
+# ============================================================
+# SECURITY
+# ============================================================
 
-# SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv(
-    "SECRET_KEY", "django-insecure-dl$-+#hdexxbu^bs@la440c)%of!r&2nfl(ru2p!9zu=6se&o-"
+    "SECRET_KEY",
+    "django-insecure-dl$-+#hdexxbu^bs@la440c)%of!r&2nfl(ru2p!9zu=6se&o-",
 )
 
-# SECURITY WARNING: don't run with debug turned on in production!
+# UUID du Département Approvisionnement. Ce paramètre active la seconde
+# position du rôle Chef de département dans le circuit de validation.
+STOCK_APPRO_DEPARTEMENT_ID = os.getenv("STOCK_APPRO_DEPARTEMENT_ID") or None
+
 DEBUG = True
 
-ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
+ALLOWED_HOSTS = [
+    "localhost",
+    "127.0.0.1",
+]
 
 
-# Application definition
+# ============================================================
+# APPLICATIONS
+# ============================================================
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -46,9 +64,10 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "rest_framework_simplejwt",
+    "django_filters",
     "corsheaders",
     "simple_history",
-    # Apps SMMC existantes (fournies par l'encadreur)
+    # Apps SMMC
     "cdg_centre_responsabilite",
     "pointage",
     "rh",
@@ -58,11 +77,18 @@ INSTALLED_APPS = [
     "rh_etablissement",
     "rh_fonction",
     "personnel",
-    # Apps du module Stock
+    # Apps projet
     "core",
     "stock",
 ]
+
+
+# ============================================================
+# MIDDLEWARE
+# ============================================================
+
 MIDDLEWARE = [
+    # CORS doit être placé assez haut
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -71,13 +97,33 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    # django-simple-history
     "simple_history.middleware.HistoryRequestMiddleware",
 ]
+
+
+# ============================================================
+# AUTHENTICATION BACKENDS
+# ============================================================
+
 AUTHENTICATION_BACKENDS = [
+    # Backend personnalisé SMMC
     "core.authentication.MatriculeBackend",
-    "django.contrib.auth.backends.ModelBackend",  # garde le login admin classique en secours
+    # Backend Django classique
+    "django.contrib.auth.backends.ModelBackend",
 ]
+
+
+# ============================================================
+# URLS
+# ============================================================
+
 ROOT_URLCONF = "config.urls"
+
+
+# ============================================================
+# TEMPLATES
+# ============================================================
 
 TEMPLATES = [
     {
@@ -94,11 +140,17 @@ TEMPLATES = [
     },
 ]
 
+
+# ============================================================
+# WSGI
+# ============================================================
+
 WSGI_APPLICATION = "config.wsgi.application"
 
 
-# Database
-# https://docs.djangoproject.com/en/6.1/ref/settings/#databases
+# ============================================================
+# DATABASE — POSTGRESQL
+# ============================================================
 
 DATABASES = {
     "default": {
@@ -106,33 +158,87 @@ DATABASES = {
         "NAME": os.getenv("DB_NAME"),
         "USER": os.getenv("DB_USER"),
         "PASSWORD": os.getenv("DB_PASSWORD"),
-        "HOST": os.getenv("DB_HOST"),
-        "PORT": os.getenv("DB_PORT"),
+        "HOST": os.getenv("DB_HOST", "localhost"),
+        "PORT": os.getenv("DB_PORT", "5432"),
     }
 }
 
 
-# Password validation
-# https://docs.djangoproject.com/en/6.1/ref/settings/#auth-password-validators
+# ============================================================
+# PASSWORD VALIDATION
+# ============================================================
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
+        "NAME": (
+            "django.contrib.auth.password_validation."
+            "UserAttributeSimilarityValidator"
+        ),
     },
     {
-        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
+        "NAME": ("django.contrib.auth.password_validation." "MinimumLengthValidator"),
     },
     {
-        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
+        "NAME": ("django.contrib.auth.password_validation." "CommonPasswordValidator"),
     },
     {
-        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
+        "NAME": ("django.contrib.auth.password_validation." "NumericPasswordValidator"),
     },
 ]
 
 
-# Internationalization
-# https://docs.djangoproject.com/en/6.1/topics/i18n/
+# ============================================================
+# DJANGO REST FRAMEWORK
+# ============================================================
+
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ),
+    "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
+    "DEFAULT_FILTER_BACKENDS": [
+        "django_filters.rest_framework.DjangoFilterBackend",
+        "rest_framework.filters.SearchFilter",
+        "rest_framework.filters.OrderingFilter",
+    ],
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 20,
+}
+
+
+# ============================================================
+# JWT
+# ============================================================
+
+from datetime import timedelta
+
+SIMPLE_JWT = {
+    # Durée du token d'accès
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
+    # Durée du refresh token
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    # Rotation
+    "ROTATE_REFRESH_TOKENS": False,
+    "BLACKLIST_AFTER_ROTATION": False,
+    # Algorithme
+    "ALGORITHM": "HS256",
+    # Header Authorization
+    "AUTH_HEADER_TYPES": ("Bearer",),
+    # Nom du header
+    "AUTH_HEADER_NAME": "HTTP_AUTHORIZATION",
+    # User ID
+    "USER_ID_FIELD": "id",
+    "USER_ID_CLAIM": "user_id",
+    # Type de token
+    "TOKEN_TYPE_CLAIM": "token_type",
+    # Claim JWT
+    "JTI_CLAIM": "jti",
+}
+
+
+# ============================================================
+# INTERNATIONALIZATION
+# ============================================================
 
 LANGUAGE_CODE = "fr-fr"
 
@@ -143,50 +249,92 @@ USE_I18N = True
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/6.1/howto/static-files/
+# ============================================================
+# STATIC FILES
+# ============================================================
 
 STATIC_URL = "static/"
 
+STATIC_ROOT = BASE_DIR / "staticfiles"
 
-# Default primary key field type
-# https://docs.djangoproject.com/en/6.1/ref/settings/#default-auto-field
+
+# ============================================================
+# MEDIA FILES
+# ============================================================
+
+# Important pour PieceJointe :
+#
+# pj_fichier = models.FileField(...)
+#
+# Les fichiers envoyés seront stockés dans MEDIA_ROOT.
+
+MEDIA_URL = "/media/"
+
+MEDIA_ROOT = BASE_DIR / "media"
+
+
+# ============================================================
+# DEFAULT PRIMARY KEY
+# ============================================================
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
-# Email
-# https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration
+# ============================================================
+# EMAIL
+# ============================================================
 
-MAILERS = {
-    "default": {
-        "BACKEND": "django.core.mail.backends.console.EmailBackend",
-    },
-}
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 
 # ============================================================
-# Django REST Framework + JWT
+# CORS
 # ============================================================
-REST_FRAMEWORK = {
-    "DEFAULT_AUTHENTICATION_CLASSES": (
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
-    ),
-    "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
-}
 
+# ------------------------------------------------------------
+# Développement uniquement
+# ------------------------------------------------------------
 
-# ============================================================
-# CORS — autorise le frontend React (Vite) et l'app Ionic à
-# appeler l'API pendant le développement
-# ============================================================
 CORS_ALLOW_ALL_ORIGINS = True
+
+
+# ------------------------------------------------------------
+# Origines autorisées explicitement
+# ------------------------------------------------------------
+
 CORS_ALLOWED_ORIGINS = [
+    # React / Vite
+    "http://localhost:5173",
+    "http://localhost:5174",
+    "http://127.0.0.1:5173",
+    "http://127.0.0.1:5174",
+    # Ionic
+    "http://localhost:8100",
+    # Android Emulator
+    "http://10.0.2.2:8100",
+]
+
+
+# ============================================================
+# CSRF — développement
+# ============================================================
+
+CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173",
     "http://localhost:5174",
     "http://127.0.0.1:5173",
     "http://127.0.0.1:5174",
     "http://localhost:8100",
-    "http://10.0.2.2:8100",
 ]
 
+
+# ============================================================
+# FILE UPLOAD
+# ============================================================
+
+# Taille maximale d'un fichier envoyé
+# Ici : 10 MB
+
+DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024
+
+FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024

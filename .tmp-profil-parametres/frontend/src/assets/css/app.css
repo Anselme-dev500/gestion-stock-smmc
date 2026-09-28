@@ -1,0 +1,215 @@
+/* =========================================================
+   SMMC STOCK MANAGEMENT
+   APP GLOBAL CSS
+========================================================= */
+
+@import "./smmc-theme.css";
+@import "./layout.css";
+@import "./stock-pages.css";
+
+/* =========================================================
+   RESET
+========================================================= */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 14px;
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+
+  font-family:
+    Inter,
+    "Segoe UI",
+    Roboto,
+    Arial,
+    sans-serif;
+
+  font-size: 14px;
+  line-height: 1.5;
+
+  color: var(--smmc-text);
+  background: var(--smmc-page-bg);
+
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+a {
+  color: inherit;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p {
+  margin-top: 0;
+}
+
+/* =========================================================
+   ROOT
+========================================================= */
+
+#root {
+  min-height: 100vh;
+}
+
+/* =========================================================
+   SELECTION
+========================================================= */
+
+::selection {
+  background: var(--smmc-green-light);
+  color: var(--smmc-green-dark);
+}
+
+/* =========================================================
+   SCROLLBAR
+========================================================= */
+
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f3f5f7;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cfd6dc;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #adb7c0;
+}
+
+/* =========================================================
+   UTILITIES
+========================================================= */
+
+.text-green {
+  color: var(--smmc-green) !important;
+}
+
+.text-danger {
+  color: #dc3545 !important;
+}
+
+.text-warning {
+  color: #d99100 !important;
+}
+
+.text-muted {
+  color: var(--smmc-muted) !important;
+}
+
+.text-dark {
+  color: var(--smmc-text-dark) !important;
+}
+
+.bg-green {
+  background: var(--smmc-green) !important;
+}
+
+.bg-green-light {
+  background: var(--smmc-green-light) !important;
+}
+
+.fw-normal {
+  font-weight: 400 !important;
+}
+
+.fw-medium {
+  font-weight: 500 !important;
+}
+
+.fw-semibold {
+  font-weight: 600 !important;
+}
+
+.fw-bold {
+  font-weight: 700 !important;
+}
+
+.d-none {
+  display: none !important;
+}
+
+.w-100 {
+  width: 100% !important;
+}
+
+.text-center {
+  text-align: center !important;
+}
+
+.text-end {
+  text-align: right !important;
+}
+
+/* =========================================================
+   FOCUS
+========================================================= */
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid rgba(30, 165, 76, 0.35);
+  outline-offset: 2px;
+}
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 991px) {
+  html {
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 576px) {
+  html {
+    font-size: 13px;
+  }
+
+  body {
+    font-size: 13px;
+  }
+}

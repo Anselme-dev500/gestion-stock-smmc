@@ -1,264 +1,250 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate,
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
+
+import { Component, useEffect, type ErrorInfo, type ReactNode } from "react";
+import { getAccessToken, getSessionUser, isAdminSession, logout } from "./services/auth";
+import SuperAdminLogin from "./pages/admin/SuperAdminLogin";
+import SuperAdminUsers from "./pages/admin/SuperAdminUsers";
+import AdminSettings from "./pages/admin/AdminSettings";
+import Login from "./pages/auth/Login";
+import ChefLayout from "./pages/chef/ChefLayout";
+
+function ProtectedLayout() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  useEffect(() => {
+    const expired = () => navigate("/login", { replace: true, state: { from: location.pathname } });
+    window.addEventListener("smmc-session-expired", expired);
+    return () => window.removeEventListener("smmc-session-expired", expired);
+  }, [navigate, location.pathname]);
+  if (isAdminSession()) return <Navigate to="/super-admin" replace />;
+  if (!getAccessToken()) return <Navigate to="/login" replace state={{ from: location.pathname }} />;
+  if (getSessionUser()?.role_stock === "chef_departement") {
+    return <Navigate to="/chef" replace />;
+  }
+  return <AdminLayout />;
+}
+
+function ProtectedChefLayout() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  useEffect(() => {
+    const expired = () => navigate("/login", { replace: true, state: { from: location.pathname } });
+    window.addEventListener("smmc-session-expired", expired);
+    return () => window.removeEventListener("smmc-session-expired", expired);
+  }, [navigate, location.pathname]);
+  if (!getAccessToken()) return <Navigate to="/login" replace state={{ from: location.pathname }} />;
+  if (getSessionUser()?.role_stock !== "chef_departement") return <Navigate to="/" replace />;
+  return <ChefLayout />;
+}
+
+class ApplicationErrorBoundary extends Component<{ children: ReactNode }, { error: Error | null }> {
+  state = { error: null as Error | null };
+
+  static getDerivedStateFromError(error: Error) {
+    return { error };
+  }
+
+  componentDidCatch(error: Error, info: ErrorInfo) {
+    console.error("Erreur de rendu SMMC", error, info);
+  }
+
+  render() {
+    if (!this.state.error) return this.props.children;
+    return <main style={{ minHeight: "100vh", display: "grid", placeItems: "center", padding: 24, background: "#f4f7f5" }}>
+      <section style={{ maxWidth: 520, padding: 28, background: "#fff", borderRadius: 12, boxShadow: "0 8px 28px rgba(16, 24, 40, .12)" }}>
+        <h1 style={{ marginTop: 0 }}>Impossible d’afficher la page</h1>
+        <p>Une erreur inattendue est survenue après la connexion. Vous pouvez vous reconnecter puis réessayer.</p>
+        <button onClick={() => { logout(); window.location.assign("/login"); }}>Retour à la connexion</button>
+        <div style={{ marginTop: 16, padding: 12, borderRadius: 8, background: "#fff0f1", color: "#9f1239", fontSize: 13 }}>
+          <strong>Détail technique :</strong>
+          <pre style={{ margin: "8px 0 0", whiteSpace: "pre-wrap", fontFamily: "inherit" }}>{this.state.error.message || "Erreur React sans message."}</pre>
+        </div>
+      </section>
+    </main>;
+  }
+}
 
 import AdminLayout from "./components/layout/AdminLayout";
 
-/* =========================
-   DASHBOARD
-========================= */
+import DashboardResponsableStock
+  from "./pages/stock/DashboardResponsableStock";
 
-import DashboardResponsableStock from "./pages/stock/DashboardResponsableStock";
+import Articles
+  from "./pages/stock/Articles";
 
-/* =========================
-   STOCK
-========================= */
+import Categories
+  from "./pages/stock/Categories";
 
-import Articles from "./pages/stock/Articles";
-import Categories from "./pages/stock/Categories";
-import EtatStock from "./pages/stock/EtatStock";
+import EtatStock
+  from "./pages/stock/EtatStock";
 
-/* =========================
-   APPROVISIONNEMENT
-========================= */
+import Fournisseurs
+  from "./pages/approvisionnement/Fournisseurs";
 
-import Fournisseurs from "./pages/approvisionnement/Fournisseurs";
-import Entrees from "./pages/approvisionnement/Entrees";
+import Entrees
+  from "./pages/approvisionnement/Entrees";
 
-/* =========================
-   DEMANDES
-========================= */
+import Demandes
+  from "./pages/demandes/Demandes";
 
-import Demandes from "./pages/demandes/Demandes";
-import NouvelleDemande from "./pages/demandes/NouvelleDemande";
-import Validations from "./pages/demandes/Validations";
+import NouvelleDemande
+  from "./pages/demandes/NouvelleDemande";
 
-/* =========================
-   MOUVEMENTS
-========================= */
+import Validations
+  from "./pages/demandes/Validations";
 
-import Mouvements from "./pages/mouvements/Mouvements";
-import Sorties from "./pages/mouvements/Sorties";
-import Retours from "./pages/mouvements/Retours";
+import Mouvements
+  from "./pages/mouvements/Mouvements";
 
-/* =========================
-   INVENTAIRE
-========================= */
+import Sorties
+  from "./pages/mouvements/Sorties";
 
-import Inventaire from "./pages/inventaire/Inventaire";
+import Retours
+  from "./pages/mouvements/Retours";
+import Dotations from "./pages/mouvements/Dotations";
 
-/* =========================
-   RAPPORTS
-========================= */
+import Inventaire
+  from "./pages/inventaire/Inventaire";
 
-import Rapports from "./pages/rapports/Rapports";
+import Rapports
+  from "./pages/rapports/Rapports";
 
-/* =========================
-   PROFIL
-========================= */
+import Profil
+  from "./pages/Profil";
+import Parametres from "./pages/Parametres";
+import EspaceChefDepartement from "./pages/chef/EspaceChefDepartement";
 
-import Profil from "./pages/Profil";
 
+function SuperAdminOnly() {
+  const location = useLocation();
+  return isAdminSession() ? <SuperAdminUsers /> : <Navigate to="/super-admin/login" replace state={{ from: location.pathname }} />;
+}
+
+function SuperAdminSettingsOnly() {
+  return isAdminSession() ? <AdminSettings /> : <Navigate to="/super-admin/login" replace />;
+}
 
 function App() {
+
   return (
-    <BrowserRouter>
+    <ApplicationErrorBoundary>
+      <BrowserRouter>
 
-      <Routes>
+        <Routes>
 
-        {/* =========================
-            TABLEAU DE BORD
-        ========================= */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/super-admin/login" element={<SuperAdminLogin />} />
+        <Route path="/super-admin" element={<SuperAdminOnly />} />
+        <Route path="/super-admin/parametres" element={<SuperAdminSettingsOnly />} />
+        <Route element={<ProtectedChefLayout />}>
+          <Route path="/chef" element={<EspaceChefDepartement />} />
+          <Route path="/chef/demandes" element={<EspaceChefDepartement />} />
+          <Route path="/chef/historique" element={<EspaceChefDepartement />} />
+          <Route path="/chef/services" element={<EspaceChefDepartement />} />
+          <Route path="/chef/profil" element={<EspaceChefDepartement />} />
+        </Route>
+        <Route element={<ProtectedLayout />}>
 
-        <Route
-          path="/"
-          element={
-            <AdminLayout>
-              <DashboardResponsableStock />
-            </AdminLayout>
-          }
-        />
+          <Route
+            path="/"
+            element={<DashboardResponsableStock />}
+          />
 
-        {/* =========================
-            STOCK
-        ========================= */}
+          <Route
+            path="/articles"
+            element={<Articles />}
+          />
 
-        <Route
-          path="/articles"
-          element={
-            <AdminLayout>
-              <Articles />
-            </AdminLayout>
-          }
-        />
+          <Route
+            path="/categories"
+            element={<Categories />}
+          />
 
-        <Route
-          path="/categories"
-          element={
-            <AdminLayout>
-              <Categories />
-            </AdminLayout>
-          }
-        />
+          <Route
+            path="/etat-stock"
+            element={<EtatStock />}
+          />
 
-        <Route
-          path="/etat-stock"
-          element={
-            <AdminLayout>
-              <EtatStock />
-            </AdminLayout>
-          }
-        />
+          <Route
+            path="/fournisseurs"
+            element={<Fournisseurs />}
+          />
 
-        {/* =========================
-            APPROVISIONNEMENT
-        ========================= */}
+          <Route
+            path="/entrees"
+            element={<Entrees />}
+          />
 
-        <Route
-          path="/fournisseurs"
-          element={
-            <AdminLayout>
-              <Fournisseurs />
-            </AdminLayout>
-          }
-        />
+          {/* =========================
+              DEMANDES
+          ========================== */}
 
-        <Route
-          path="/entrees"
-          element={
-            <AdminLayout>
-              <Entrees />
-            </AdminLayout>
-          }
-        />
+          <Route
+            path="/demandes"
+            element={<Demandes />}
+          />
 
-        {/* =========================
-            DEMANDES
-        ========================= */}
+          <Route
+            path="/nouvelle-demande"
+            element={<NouvelleDemande />}
+          />
 
-        <Route
-          path="/demandes"
-          element={
-            <AdminLayout>
-              <Demandes />
-            </AdminLayout>
-          }
-        />
+          <Route
+            path="/validations"
+            element={<Validations />}
+          />
 
-        <Route
-          path="/nouvelle-demande"
-          element={
-            <AdminLayout>
-              <NouvelleDemande />
-            </AdminLayout>
-          }
-        />
+          {/* =========================
+              MOUVEMENTS
+          ========================== */}
 
-        <Route
-          path="/validations"
-          element={
-            <AdminLayout>
-              <Validations />
-            </AdminLayout>
-          }
-        />
+          <Route
+            path="/mouvements"
+            element={<Mouvements />}
+          />
 
-        {/* =========================
-            MOUVEMENTS
-        ========================= */}
+          <Route
+            path="/sorties"
+            element={<Sorties />}
+          />
 
-        <Route
-          path="/mouvements"
-          element={
-            <AdminLayout>
-              <Mouvements />
-            </AdminLayout>
-          }
-        />
+          <Route
+            path="/retours"
+            element={<Retours />}
+          />
 
-        <Route
-          path="/sorties"
-          element={
-            <AdminLayout>
-              <Sorties />
-            </AdminLayout>
-          }
-        />
+          <Route path="/dotations" element={<Dotations />} />
 
-        <Route
-          path="/retours"
-          element={
-            <AdminLayout>
-              <Retours />
-            </AdminLayout>
-          }
-        />
+          <Route
+            path="/inventaire"
+            element={<Inventaire />}
+          />
 
-        {/* =========================
-            INVENTAIRE
-        ========================= */}
+          <Route
+            path="/rapports"
+            element={<Rapports />}
+          />
 
-        <Route
-          path="/inventaire"
-          element={
-            <AdminLayout>
-              <Inventaire />
-            </AdminLayout>
-          }
-        />
+          <Route
+            path="/profil"
+            element={<Profil />}
+          />
+          <Route path="/parametres" element={<Parametres />} />
 
-        {/* =========================
-            RAPPORTS
-        ========================= */}
+        </Route>
+        <Route path="*" element={<Navigate to="/" replace />} />
 
-        <Route
-          path="/rapports"
-          element={
-            <AdminLayout>
-              <Rapports />
-            </AdminLayout>
-          }
-        />
+        </Routes>
 
-        {/* =========================
-            PROFIL
-        ========================= */}
-
-        <Route
-          path="/profil"
-          element={
-            <AdminLayout>
-              <Profil />
-            </AdminLayout>
-          }
-        />
-
-        {/* =========================
-            PAGE 404
-        ========================= */}
-
-        <Route
-          path="*"
-          element={
-            <AdminLayout>
-              <div className="text-center py-5">
-                <h1 className="display-4">
-                  404
-                </h1>
-
-                <h3>
-                  Page introuvable
-                </h3>
-
-                <p className="text-muted">
-                  La page que vous recherchez n'existe pas.
-                </p>
-              </div>
-            </AdminLayout>
-          }
-        />
-
-      </Routes>
-
-    </BrowserRouter>
+      </BrowserRouter>
+    </ApplicationErrorBoundary>
   );
 }
 

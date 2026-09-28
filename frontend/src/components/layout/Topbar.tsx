@@ -1,277 +1,45 @@
-import { NavLink } from "react-router-dom";
+import { getSessionUser, logout } from "../../services/auth";
+import { authFetch } from "../../services/auth";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-type MenuItem = {
-  to: string;
-  label: string;
-  icon: string;
-};
+const API_URL = (import.meta.env.VITE_API_URL || "/api/stock").replace(/\/$/, "");
+interface Notification { id: string; type: "warning" | "success" | "info"; title: string; message: string; created_at: string; link: string; }
+interface NotificationResponse { count: number; results: Notification[]; }
+interface TopbarProps { onMenuClick?: () => void; }
 
-const mainLinks: MenuItem[] = [
-  {
-    to: "/",
-    label: "Tableau de bord",
-    icon: "bi-speedometer2",
-  },
-];
-
-const stockLinks: MenuItem[] = [
-  {
-    to: "/articles",
-    label: "Articles",
-    icon: "bi-box-seam",
-  },
-  {
-    to: "/categories",
-    label: "Catégories",
-    icon: "bi-tags",
-  },
-  {
-    to: "/etat-stock",
-    label: "État du stock",
-    icon: "bi-bar-chart",
-  },
-];
-
-const approvisionnementLinks: MenuItem[] = [
-  {
-    to: "/fournisseurs",
-    label: "Fournisseurs",
-    icon: "bi-truck",
-  },
-  {
-    to: "/entrees",
-    label: "Entrées",
-    icon: "bi-box-arrow-in-down",
-  },
-];
-
-const demandesLinks: MenuItem[] = [
-  {
-    to: "/demandes",
-    label: "Demandes",
-    icon: "bi-file-earmark-text",
-  },
-  {
-    to: "/nouvelle-demande",
-    label: "Nouvelle demande",
-    icon: "bi-file-earmark-plus",
-  },
-  {
-    to: "/validations",
-    label: "Validations",
-    icon: "bi-check-circle",
-  },
-];
-
-const mouvementsLinks: MenuItem[] = [
-  {
-    to: "/mouvements",
-    label: "Mouvements",
-    icon: "bi-arrow-left-right",
-  },
-  {
-    to: "/sorties",
-    label: "Sorties",
-    icon: "bi-box-arrow-up",
-  },
-  {
-    to: "/retours",
-    label: "Retours",
-    icon: "bi-arrow-return-left",
-  },
-];
-
-const autresLinks: MenuItem[] = [
-  {
-    to: "/inventaire",
-    label: "Inventaire",
-    icon: "bi-clipboard-check",
-  },
-  {
-    to: "/rapports",
-    label: "Rapports",
-    icon: "bi-graph-up",
-  },
-  {
-    to: "/services",
-    label: "Services",
-    icon: "bi-building",
-  },
-  {
-    to: "/departements",
-    label: "Départements",
-    icon: "bi-diagram-3",
-  },
-];
-
-function MenuLink({ item }: { item: MenuItem }) {
-  return (
-    <NavLink
-      to={item.to}
-      className={({ isActive }) =>
-        `nav-link d-flex align-items-center ${
-          isActive ? "active" : ""
-        }`
-      }
-      style={({ isActive }) => ({
-        color: isActive ? "#ffffff" : "#212529",
-        backgroundColor: isActive ? "#1EA54C" : "transparent",
-        borderRadius: "8px",
-        padding: "9px 12px",
-        marginBottom: "3px",
-      })}
-    >
-      <i className={`bi ${item.icon} me-2`}></i>
-      <span>{item.label}</span>
-    </NavLink>
-  );
+function relativeDate(value: string) {
+  const seconds = Math.max(0, Math.floor((Date.now() - new Date(value).getTime()) / 1000));
+  if (seconds < 60) return "À l’instant";
+  if (seconds < 3600) return `Il y a ${Math.floor(seconds / 60)} min`;
+  if (seconds < 86400) return `Il y a ${Math.floor(seconds / 3600)} h`;
+  return `Il y a ${Math.floor(seconds / 86400)} j`;
 }
 
-function SectionTitle({ children }: { children: React.ReactNode }) {
-  return (
-    <div
-      className="text-uppercase small fw-bold mt-3 mb-2 px-2"
-      style={{ color: "#0F7A3D" }}
-    >
-      {children}
-    </div>
-  );
-}
+export default function Topbar({ onMenuClick }: TopbarProps) {
+  const navigate = useNavigate();
+  const currentUser = getSessionUser();
+  const displayName = [currentUser?.prenom, currentUser?.nom].filter(Boolean).join(" ") || currentUser?.matricule || "Utilisateur SMMC";
+  const [notificationOpen, setNotificationOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [notificationError, setNotificationError] = useState("");
 
-export default function Topbar() {
-  return (
-    <header
-      className="bg-white border-bottom"
-      style={{
-        borderTop: "4px solid #FDB913",
-      }}
-    >
-      <div className="container-fluid px-4 py-3">
-        <div className="d-flex justify-content-between align-items-center">
-          
-          {/* Partie gauche */}
-          <div>
-            <h5
-              className="mb-1 fw-bold"
-              style={{ color: "#0F7A3D" }}
-            >
-              Gestion du stock — SMMC
-            </h5>
+  const loadNotifications = async () => {
+    try {
+      const response = await authFetch(`${API_URL}/notifications/`);
+      if (!response.ok) throw new Error("Impossible de charger les notifications.");
+      const data = await response.json() as NotificationResponse;
+      setNotifications(data.results || []); setNotificationError("");
+    } catch (cause) { setNotificationError(cause instanceof Error ? cause.message : "Erreur de chargement."); }
+  };
 
-            <small className="text-muted">
-              Système de gestion des stocks
-            </small>
-          </div>
+  useEffect(() => { void loadNotifications(); }, []);
+  const openNotifications = () => { setNotificationOpen((open) => !open); setProfileOpen(false); };
+  const icon = (type: Notification["type"]) => type === "warning" ? "bi-exclamation-triangle" : type === "success" ? "bi-check-circle" : "bi-clipboard-check";
 
-          {/* Partie droite */}
-          <div className="d-flex align-items-center gap-3">
-
-            {/* Notification */}
-            <button
-              type="button"
-              className="btn btn-light position-relative"
-            >
-              <i
-                className="bi bi-bell"
-                style={{ color: "#1EA54C" }}
-              ></i>
-
-              <span
-                className="position-absolute top-0 start-100 translate-middle badge rounded-pill"
-                style={{
-                  backgroundColor: "#FDB913",
-                  color: "#212529",
-                }}
-              >
-                3
-              </span>
-            </button>
-
-            {/* Utilisateur */}
-            <div className="d-flex align-items-center gap-2">
-              <i
-                className="bi bi-person-circle fs-3"
-                style={{ color: "#1EA54C" }}
-              ></i>
-
-              <div>
-                <div className="fw-semibold">
-                  Sylvain
-                </div>
-
-                <div className="text-muted small">
-                  Responsable stock
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Navigation */}
-        <nav className="mt-3">
-
-          {/* PRINCIPAL */}
-          <SectionTitle>PRINCIPAL</SectionTitle>
-
-          {mainLinks.map((item) => (
-            <MenuLink
-              key={item.to}
-              item={item}
-            />
-          ))}
-
-          {/* STOCK */}
-          <SectionTitle>GESTION DU STOCK</SectionTitle>
-
-          {stockLinks.map((item) => (
-            <MenuLink
-              key={item.to}
-              item={item}
-            />
-          ))}
-
-          {/* APPROVISIONNEMENT */}
-          <SectionTitle>APPROVISIONNEMENT</SectionTitle>
-
-          {approvisionnementLinks.map((item) => (
-            <MenuLink
-              key={item.to}
-              item={item}
-            />
-          ))}
-
-          {/* DEMANDES */}
-          <SectionTitle>DEMANDES</SectionTitle>
-
-          {demandesLinks.map((item) => (
-            <MenuLink
-              key={item.to}
-              item={item}
-            />
-          ))}
-
-          {/* MOUVEMENTS */}
-          <SectionTitle>MOUVEMENTS</SectionTitle>
-
-          {mouvementsLinks.map((item) => (
-            <MenuLink
-              key={item.to}
-              item={item}
-            />
-          ))}
-
-          {/* AUTRES */}
-          <SectionTitle>AUTRES</SectionTitle>
-
-          {autresLinks.map((item) => (
-            <MenuLink
-              key={item.to}
-              item={item}
-            />
-          ))}
-
-        </nav>
-      </div>
-    </header>
-  );
+  return <header className="smmc-topbar">
+    <div className="topbar-left"><button className="mobile-menu-button" onClick={onMenuClick}><i className="bi bi-list" /></button><div className="topbar-search"><i className="bi bi-search" /><input type="text" placeholder="Rechercher dans le stock..." /><span className="search-shortcut">Ctrl K</span></div></div>
+    <div className="topbar-right"><div className="topbar-dropdown"><button className="topbar-icon-button" onClick={openNotifications} aria-label="Notifications"><i className="bi bi-bell" />{notifications.length > 0 && <span className="notification-badge">{notifications.length > 9 ? "9+" : notifications.length}</span>}</button>{notificationOpen && <div className="notification-panel"><div className="dropdown-header"><div><strong>Notifications</strong><small>{notifications.length} notification{notifications.length > 1 ? "s" : ""} issue{notifications.length > 1 ? "s" : ""} des données</small></div><button onClick={() => void loadNotifications()}>Actualiser</button></div>{notificationError ? <div className="notification-item"><div><strong>Erreur</strong><p>{notificationError}</p></div></div> : notifications.length === 0 ? <div className="notification-item"><div><strong>Aucune notification</strong><p>Aucune alerte n’a été trouvée dans la base de données.</p></div></div> : notifications.map((notification) => <button className="notification-item" key={notification.id} onClick={() => { setNotificationOpen(false); navigate(notification.link); }}><div className={`notification-icon ${notification.type}`}><i className={`bi ${icon(notification.type)}`} /></div><div><strong>{notification.title}</strong><p>{notification.message}</p><small>{relativeDate(notification.created_at)}</small></div></button>)}</div>}</div><div className="topbar-separator" /><div className="topbar-dropdown"><button className="topbar-profile" onClick={() => { setProfileOpen((open) => !open); setNotificationOpen(false); }}><div className="topbar-avatar"><i className="bi bi-person-fill" /></div><div className="topbar-user"><strong>{displayName}</strong><span>{currentUser?.matricule ? `Matricule ${currentUser.matricule}` : "Compte SMMC"}</span></div><i className={`bi ${profileOpen ? "bi-chevron-up" : "bi-chevron-down"}`} /></button>{profileOpen && <div className="profile-dropdown"><button onClick={() => navigate("/profil")}><i className="bi bi-person" />Mon profil</button><button><i className="bi bi-gear" />Paramètres</button><div className="dropdown-divider" /><button className="logout-button" onClick={() => { logout(); navigate("/login", { replace: true }); }}><i className="bi bi-box-arrow-right" />Déconnexion</button></div>}</div></div>
+  </header>;
 }

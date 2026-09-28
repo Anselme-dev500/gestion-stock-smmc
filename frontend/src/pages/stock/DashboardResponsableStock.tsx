@@ -1,177 +1,45 @@
-import { useEffect, useState } from 'react';
-import { stockApi } from '../../services/stockApi';
-import type { DashboardStats } from '../../types/stock';
+import { authFetch } from "../../services/auth";
+import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
+
+const API_URL = (import.meta.env.VITE_API_URL || "/api/stock").replace(/\/$/, "");
+type Article = { art_code_article: string; art_designation: string; art_categorie: string; cat_nom: string; art_unite: string; art_quantite_stock: number; art_seuil_min: number; art_etat: string; est_en_alerte: boolean };
+type Category = { cat_id: string; cat_nom: string };
+
+async function getJson<T>(path: string): Promise<T> {
+  const response = await authFetch(`${API_URL}${path}`);
+  if (!response.ok) throw new Error(`Erreur HTTP ${response.status}`);
+  return response.json() as Promise<T>;
+}
 
 export default function DashboardResponsableStock() {
-  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [articles, setArticles] = useState<Article[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const data = await stockApi.getDashboardStats();
-        setStats(data);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchStats();
+    let cancelled = false;
+    void Promise.all([getJson<Article[]>("/articles/"), getJson<Category[]>("/categories/")])
+      .then(([articleData, categoryData]) => { if (!cancelled) { setArticles(articleData); setCategories(categoryData); } })
+      .catch((cause: unknown) => { if (!cancelled) setError(cause instanceof Error ? cause.message : "Échec de la récupération."); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
   }, []);
 
-  if (loading || !stats) {
-    return (
-      <div className="text-center py-5">
-        <div className="spinner-border text-success" role="status"></div>
-        <p className="mt-2 text-muted small">Chargement du tableau de bord SMMC...</p>
-      </div>
-    );
-  }
+  const stats = useMemo(() => ({
+    active: articles.filter((article) => article.art_etat === "actif").length,
+    normal: articles.filter((article) => article.art_quantite_stock > article.art_seuil_min).length,
+    low: articles.filter((article) => article.est_en_alerte).length,
+    empty: articles.filter((article) => article.art_quantite_stock <= 0).length,
+  }), [articles]);
+  const cards = [["bi-box-seam", "Articles", articles.length, `${stats.active} actifs`, "green"], ["bi-tags", "Catégories", categories.length, "référencées", "yellow"], ["bi-boxes", "Stock normal", stats.normal, "articles disponibles", "blue"], ["bi-exclamation-triangle", "Stock faible", stats.low, "nécessitent une attention", "red"]];
 
-  return (
-    <div className="container-fluid py-4">
-      {/* Banner SMMC */}
-      <div className="card border-0 text-white mb-4 shadow-sm" style={{ background: 'linear-gradient(135deg, #1B5E20 0%, #2E7D32 100%)' }}>
-        <div className="card-body p-4 d-flex justify-content-between align-items-center">
-          <div>
-            <h3 className="fw-bold mb-1"><i className="bi bi-speedometer2 me-2"></i>Tableau de Bord — Gestion du Stock SMMC</h3>
-            <p className="mb-0 text-white-50">Société de Manutention des Marchandises Conventionnelles (Port de Toamasina)</p>
-          </div>
-          <div className="d-none d-md-block text-end">
-            <span className="badge bg-warning text-dark p-2 fw-bold me-2"><i className="bi bi-shield-check me-1"></i>Système Dématérialisé R17_FRM8</span>
-            <span className="badge bg-light text-dark p-2 fw-bold"><i className="bi bi-calendar-event me-1"></i>{new Date().toLocaleDateString('fr-FR')}</span>
-          </div>
-        </div>
-      </div>
-
-      {/* KPI Cards */}
-      <div className="row g-3 mb-4">
-        <div className="col-md-3">
-          <div className="card border-0 shadow-sm border-start border-4 border-success h-100">
-            <div className="card-body p-3">
-              <div className="d-flex justify-content-between align-items-center">
-                <div>
-                  <div className="text-muted small fw-semibold text-uppercase">Total Articles</div>
-                  <div className="fs-3 fw-bold text-dark">{stats.total_articles}</div>
-                </div>
-                <div className="rounded-circle p-3 bg-success bg-opacity-10 text-success">
-                  <i className="bi bi-box-seam fs-3"></i>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="col-md-3">
-          <div className="card border-0 shadow-sm border-start border-4 border-danger h-100">
-            <div className="card-body p-3">
-              <div className="d-flex justify-content-between align-items-center">
-                <div>
-                  <div className="text-muted small fw-semibold text-uppercase">Articles en Alerte</div>
-                  <div className="fs-3 fw-bold text-danger">{stats.articles_alerte}</div>
-                </div>
-                <div className="rounded-circle p-3 bg-danger bg-opacity-10 text-danger">
-                  <i className="bi bi-exclamation-triangle fs-3"></i>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="col-md-3">
-          <div className="card border-0 shadow-sm border-start border-4 border-warning h-100">
-            <div className="card-body p-3">
-              <div className="d-flex justify-content-between align-items-center">
-                <div>
-                  <div className="text-muted small fw-semibold text-uppercase">Demandes en Attente</div>
-                  <div className="fs-3 fw-bold text-dark">{stats.demandes_soumises + stats.demandes_en_cours}</div>
-                </div>
-                <div className="rounded-circle p-3 bg-warning bg-opacity-10 text-warning">
-                  <i className="bi bi-hourglass-split fs-3"></i>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="col-md-3">
-          <div className="card border-0 shadow-sm border-start border-4 border-primary h-100">
-            <div className="card-body p-3">
-              <div className="d-flex justify-content-between align-items-center">
-                <div>
-                  <div className="text-muted small fw-semibold text-uppercase">Valeur Totale Stock</div>
-                  <div className="fs-5 fw-bold text-dark">{stats.valeur_totale_stock.toLocaleString('fr-FR')} Ar</div>
-                </div>
-                <div className="rounded-circle p-3 bg-primary bg-opacity-10 text-primary">
-                  <i className="bi bi-cash-stack fs-3"></i>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Shortcuts & Quick Actions */}
-      <div className="row g-4 mb-4">
-        <div className="col-lg-8">
-          <div className="card border-0 shadow-sm h-100">
-            <div className="card-header bg-white border-0 fw-bold py-3 text-dark">
-              <i className="bi bi-clock-history me-2 text-success"></i>Derniers Mouvements de Sortie
-            </div>
-            <div className="card-body p-0">
-              <div className="table-responsive">
-                <table className="table table-hover align-middle mb-0">
-                  <thead className="table-light">
-                    <tr className="small text-muted">
-                      <th>N° Mouvement</th>
-                      <th>Date</th>
-                      <th>Service Destinataire</th>
-                      <th className="text-end">Détails</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {stats.derniers_mouvements.map((m) => (
-                      <tr key={m.id}>
-                        <td className="fw-bold small">{m.numero}</td>
-                        <td className="small text-muted">{new Date(m.date).toLocaleDateString('fr-FR')}</td>
-                        <td className="fw-semibold">{m.service}</td>
-                        <td className="text-end">
-                          <a href="/mouvements" className="btn btn-sm btn-outline-secondary">
-                            <i className="bi bi-arrow-right"></i>
-                          </a>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="col-lg-4">
-          <div className="card border-0 shadow-sm h-100">
-            <div className="card-header bg-white border-0 fw-bold py-3 text-dark">
-              <i className="bi bi-lightning-charge me-2 text-warning"></i>Raccourcis Opérationnels
-            </div>
-            <div className="card-body p-3 d-flex flex-column justify-content-around">
-              <a href="/nouvelle-demande" className="btn btn-outline-success text-start py-2 font-semibold">
-                <i className="bi bi-file-earmark-plus me-2 fs-5"></i>Créer une Demande (R17_FRM8)
-              </a>
-              <a href="/validations" className="btn btn-outline-primary text-start py-2 font-semibold">
-                <i className="bi bi-check2-square me-2 fs-5"></i>Valider les Demandes en Attente
-              </a>
-              <a href="/articles" className="btn btn-outline-dark text-start py-2 font-semibold">
-                <i className="bi bi-box-seam me-2 fs-5"></i>Consulter les Alertes de Stock
-              </a>
-              <a href="/inventaire" className="btn btn-outline-secondary text-start py-2 font-semibold">
-                <i className="bi bi-clipboard-check me-2 fs-5"></i>Lancer une Session d'Inventaire
-              </a>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+  return <div className="smmc-page">
+    <div className="dashboard-intro"><div className="page-header"><div><div className="page-breadcrumb">SMMC / Gestion du stock / Tableau de bord</div><h1 className="page-title">Tableau de bord</h1><p className="page-subtitle">Vue générale de la gestion du stock de la SMMC.</p></div><Link to="/articles" className="smmc-btn smmc-btn-primary">+ Nouvel article</Link></div><div className="dashboard-intro-foot"><span><i className="bi bi-shield-check" /> Espace de gestion SMMC</span><span><i className="bi bi-geo-alt" /> Port de Toamasina</span></div></div>
+    {error && <div className="smmc-alert smmc-alert-danger"><strong>Erreur :</strong> {error}</div>}
+    <div className="stats-grid">{cards.map(([icon, label, value, description, color]) => <div className="stat-card" key={String(label)}><div className={`stat-icon ${color}`}><i className={`bi ${icon}`} /></div><div><div className="stat-label">{label}</div><div className="stat-value">{loading ? "..." : value}</div><div className="stat-description">{description}</div></div></div>)}</div>
+    <div className="content-card"><div className="content-card-header"><div><h2>Alertes de stock</h2><p>Articles dont la quantité atteint le seuil minimum.</p></div><Link to="/etat-stock" className="smmc-btn smmc-btn-outline">Voir l’état du stock</Link></div><div className="content-card-body">{loading ? <div className="loading-state">Chargement du stock...</div> : stats.low === 0 ? <div className="empty-state"><strong>Aucun article en stock faible</strong><span>Le niveau du stock est actuellement satisfaisant.</span></div> : <div className="table-responsive"><table className="smmc-table"><thead><tr><th>Code</th><th>Article</th><th>Catégorie</th><th>Stock</th><th>Minimum</th><th>État</th></tr></thead><tbody>{articles.filter((article) => article.est_en_alerte).slice(0, 10).map((article) => <tr key={article.art_code_article}><td><strong>{article.art_code_article}</strong></td><td>{article.art_designation}</td><td>{article.cat_nom}</td><td>{article.art_quantite_stock} {article.art_unite}</td><td>{article.art_seuil_min} {article.art_unite}</td><td><span className={`status-badge ${article.art_quantite_stock <= 0 ? "status-danger" : "status-warning"}`}>{article.art_quantite_stock <= 0 ? "Rupture" : "Stock faible"}</span></td></tr>)}</tbody></table></div>}</div></div>
+    <div className="stock-summary"><div className="summary-item"><span>Stock normal</span><strong>{stats.normal}</strong></div><div className="summary-item"><span>Stock faible</span><strong>{stats.low}</strong></div><div className="summary-item"><span>Rupture</span><strong>{stats.empty}</strong></div></div>
+  </div>;
 }

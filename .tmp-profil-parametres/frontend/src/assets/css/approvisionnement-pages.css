@@ -1,0 +1,832 @@
+/* =========================================================
+   SMMC - APPROVISIONNEMENT
+   Design moderne
+========================================================= */
+
+:root {
+  --smmc-green: #16a34a;
+  --smmc-green-dark: #15803d;
+  --smmc-green-light: #ecfdf3;
+
+  --appro-bg: #f5f7f9;
+  --appro-white: #ffffff;
+  --appro-text: #172b4d;
+  --appro-muted: #667085;
+  --appro-border: #e4e7ec;
+
+  --appro-blue: #2563eb;
+  --appro-orange: #f59e0b;
+  --appro-purple: #7c3aed;
+  --appro-red: #dc2626;
+
+  --appro-radius: 14px;
+}
+
+/* =========================================================
+   PAGE
+========================================================= */
+
+.appro-page {
+  min-height: 100%;
+  padding: 30px;
+  background: var(--appro-bg);
+  color: var(--appro-text);
+}
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+.appro-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 25px;
+  margin-bottom: 25px;
+}
+
+.appro-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-size: 13px;
+  color: var(--appro-muted);
+}
+
+.appro-breadcrumb i {
+  font-size: 10px;
+}
+
+.appro-breadcrumb strong {
+  color: var(--smmc-green);
+}
+
+.appro-page-header h1 {
+  margin: 0;
+  font-size: 30px;
+  font-weight: 750;
+  letter-spacing: -0.5px;
+}
+
+.appro-page-header p {
+  margin: 7px 0 0;
+  color: var(--appro-muted);
+  font-size: 14px;
+}
+
+/* =========================================================
+   BOUTONS
+========================================================= */
+
+.appro-primary-button {
+  border: 0;
+  border-radius: 10px;
+  padding: 11px 17px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: var(--smmc-green);
+  color: white;
+  font-size: 14px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: 0.2s ease;
+  white-space: nowrap;
+}
+
+.appro-primary-button:hover {
+  background: var(--smmc-green-dark);
+  transform: translateY(-1px);
+}
+
+.appro-primary-button:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.appro-secondary-button {
+  border: 1px solid var(--appro-border);
+  border-radius: 10px;
+  padding: 11px 17px;
+  background: white;
+  color: #344054;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.appro-secondary-button:hover {
+  background: #f9fafb;
+}
+
+.appro-refresh-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--appro-border);
+  background: white;
+  border-radius: 9px;
+  padding: 9px 13px;
+  color: #344054;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.appro-refresh-button:hover {
+  background: #f9fafb;
+}
+
+/* =========================================================
+   ALERTES
+========================================================= */
+
+.appro-alert {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 15px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
+.appro-alert button {
+  margin-left: auto;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font-size: 18px;
+}
+
+.appro-alert-success {
+  background: #ecfdf3;
+  color: #067647;
+  border: 1px solid #abefc6;
+}
+
+.appro-alert-danger {
+  background: #fef3f2;
+  color: #b42318;
+  border: 1px solid #fecdca;
+}
+
+/* =========================================================
+   STATISTIQUES
+========================================================= */
+
+.appro-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+.appro-stat-card {
+  min-height: 105px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 20px;
+  background: white;
+  border: 1px solid var(--appro-border);
+  border-radius: var(--appro-radius);
+  box-shadow: 0 2px 8px rgba(16, 24, 40, 0.03);
+}
+
+.appro-stat-icon {
+  width: 52px;
+  height: 52px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 13px;
+  font-size: 23px;
+}
+
+.appro-stat-icon.blue {
+  color: #2563eb;
+  background: #eff6ff;
+}
+
+.appro-stat-icon.green {
+  color: #16a34a;
+  background: #ecfdf3;
+}
+
+.appro-stat-icon.orange {
+  color: #d97706;
+  background: #fffbeb;
+}
+
+.appro-stat-icon.purple {
+  color: #7c3aed;
+  background: #f5f3ff;
+}
+
+.appro-stat-card span {
+  display: block;
+  color: var(--appro-muted);
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+
+.appro-stat-card strong {
+  display: block;
+  font-size: 26px;
+  line-height: 1;
+}
+
+/* =========================================================
+   CARD
+========================================================= */
+
+.appro-card {
+  background: white;
+  border: 1px solid var(--appro-border);
+  border-radius: var(--appro-radius);
+  box-shadow: 0 2px 8px rgba(16, 24, 40, 0.03);
+  overflow: hidden;
+}
+
+.appro-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  padding: 22px 24px;
+  border-bottom: 1px solid #eef0f3;
+}
+
+.appro-card-header h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.appro-card-header p {
+  margin: 4px 0 0;
+  color: var(--appro-muted);
+  font-size: 13px;
+}
+
+/* =========================================================
+   FILTRES
+========================================================= */
+
+.appro-filter-bar {
+  display: flex;
+  gap: 12px;
+  padding: 18px 24px;
+  background: #fafbfc;
+  border-bottom: 1px solid #eef0f3;
+}
+
+.appro-search {
+  height: 42px;
+  flex: 1;
+  max-width: 550px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 0 13px;
+  border: 1px solid var(--appro-border);
+  background: white;
+  border-radius: 9px;
+}
+
+.appro-search i {
+  color: #98a2b3;
+}
+
+.appro-search input {
+  width: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #101828;
+  font-size: 13px;
+}
+
+.appro-select {
+  height: 42px;
+  min-width: 160px;
+  padding: 0 12px;
+  border: 1px solid var(--appro-border);
+  border-radius: 9px;
+  background: white;
+  color: #344054;
+  outline: none;
+}
+
+/* =========================================================
+   TABLE
+========================================================= */
+
+.appro-table-container {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.appro-table {
+  width: 100%;
+  min-width: 1050px;
+  border-collapse: collapse;
+}
+
+.appro-table th {
+  padding: 13px 18px;
+  background: #f9fafb;
+  color: #667085;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  white-space: nowrap;
+  text-align: left;
+}
+
+.appro-table td {
+  padding: 15px 18px;
+  border-top: 1px solid #eef0f3;
+  font-size: 13px;
+  color: #344054;
+  vertical-align: middle;
+}
+
+.appro-table tbody tr {
+  transition: background 0.15s ease;
+}
+
+.appro-table tbody tr:hover {
+  background: #f9fcfa;
+}
+
+/* =========================================================
+   FOURNISSEUR
+========================================================= */
+
+.supplier-cell {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-width: 180px;
+}
+
+.supplier-avatar {
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: var(--smmc-green-light);
+  color: var(--smmc-green);
+  font-weight: 750;
+}
+
+.supplier-cell strong {
+  display: block;
+  color: #172b4d;
+}
+
+.supplier-cell small {
+  display: block;
+  margin-top: 2px;
+  color: #98a2b3;
+  font-size: 11px;
+}
+
+/* =========================================================
+   ARTICLE
+========================================================= */
+
+.article-cell strong {
+  display: block;
+  color: #172b4d;
+}
+
+.article-cell small {
+  display: block;
+  margin-top: 3px;
+  color: #98a2b3;
+  font-size: 11px;
+}
+
+/* =========================================================
+   REFERENCE
+========================================================= */
+
+.reference-cell {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.reference-icon {
+  width: 35px;
+  height: 35px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9px;
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.reference-cell strong {
+  white-space: nowrap;
+}
+
+/* =========================================================
+   QUANTITE
+========================================================= */
+
+.quantity-badge {
+  display: inline-flex;
+  padding: 5px 9px;
+  border-radius: 7px;
+  background: #ecfdf3;
+  color: #087443;
+  font-weight: 700;
+}
+
+.amount-value {
+  white-space: nowrap;
+}
+
+/* =========================================================
+   BADGES
+========================================================= */
+
+.appro-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 9px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.appro-badge.success {
+  background: #ecfdf3;
+  color: #067647;
+}
+
+.appro-badge.warning {
+  background: #fffaeb;
+  color: #b54708;
+}
+
+.appro-badge.muted {
+  background: #f2f4f7;
+  color: #667085;
+}
+
+/* =========================================================
+   ACTIONS
+========================================================= */
+
+.appro-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 5px;
+}
+
+.appro-action-button {
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  border: 1px solid var(--appro-border);
+  background: white;
+  cursor: pointer;
+  transition: 0.15s ease;
+}
+
+.appro-action-button.view {
+  color: #475467;
+}
+
+.appro-action-button.edit {
+  color: #2563eb;
+}
+
+.appro-action-button.delete {
+  color: #dc2626;
+}
+
+.appro-action-button:hover {
+  background: #f9fafb;
+  transform: translateY(-1px);
+}
+
+/* =========================================================
+   EMPTY
+========================================================= */
+
+.appro-empty {
+  padding: 70px 25px;
+  text-align: center;
+}
+
+.appro-empty-icon {
+  width: 65px;
+  height: 65px;
+  margin: 0 auto 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 18px;
+  background: var(--smmc-green-light);
+  color: var(--smmc-green);
+  font-size: 27px;
+}
+
+.appro-empty h3 {
+  margin: 0 0 7px;
+  font-size: 17px;
+}
+
+.appro-empty p {
+  color: var(--appro-muted);
+  font-size: 13px;
+  margin-bottom: 18px;
+}
+
+/* =========================================================
+   LOADING
+========================================================= */
+
+.appro-loading {
+  min-height: 280px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: var(--appro-muted);
+  font-size: 14px;
+}
+
+/* =========================================================
+   MODAL
+========================================================= */
+
+.appro-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 25px;
+  background: rgba(16, 24, 40, 0.48);
+  backdrop-filter: blur(3px);
+}
+
+.appro-modal {
+  width: 100%;
+  max-width: 720px;
+  max-height: 90vh;
+  overflow-y: auto;
+  background: white;
+  border-radius: 18px;
+  box-shadow: 0 25px 70px rgba(16, 24, 40, 0.22);
+}
+
+.appro-modal-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  padding: 22px 25px;
+  border-bottom: 1px solid #eef0f3;
+}
+
+.appro-modal-header > div:first-child {
+  display: flex;
+  gap: 13px;
+}
+
+.appro-modal-icon {
+  width: 43px;
+  height: 43px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 11px;
+  background: var(--smmc-green-light);
+  color: var(--smmc-green);
+  font-size: 20px;
+}
+
+.appro-modal-header h2 {
+  margin: 1px 0 3px;
+  font-size: 18px;
+}
+
+.appro-modal-header p {
+  margin: 0;
+  color: var(--appro-muted);
+  font-size: 12px;
+}
+
+.appro-modal-close {
+  width: 35px;
+  height: 35px;
+  border: 0;
+  border-radius: 8px;
+  background: #f2f4f7;
+  color: #667085;
+  cursor: pointer;
+}
+
+.appro-modal-close:hover {
+  background: #e4e7ec;
+}
+
+/* =========================================================
+   FORM
+========================================================= */
+
+.appro-modal form {
+  padding: 25px;
+}
+
+.appro-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+
+.appro-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.appro-form-group.full {
+  grid-column: 1 / -1;
+}
+
+.appro-form-group label {
+  color: #344054;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.appro-form-group input,
+.appro-form-group select,
+.appro-form-group textarea {
+  width: 100%;
+  border: 1px solid #d0d5dd;
+  border-radius: 9px;
+  padding: 10px 12px;
+  outline: none;
+  background: white;
+  color: #101828;
+  font-size: 13px;
+  box-sizing: border-box;
+  transition: 0.15s ease;
+}
+
+.appro-form-group input:focus,
+.appro-form-group select:focus,
+.appro-form-group textarea:focus {
+  border-color: var(--smmc-green);
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.1);
+}
+
+.appro-form-group textarea {
+  resize: vertical;
+}
+
+.appro-input-icon {
+  position: relative;
+}
+
+.appro-input-icon i {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #98a2b3;
+  pointer-events: none;
+}
+
+.appro-input-icon input {
+  padding-left: 36px;
+}
+
+/* =========================================================
+   TOTAL
+========================================================= */
+
+.appro-total-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 18px;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 11px;
+}
+
+.appro-total-box span {
+  display: block;
+  color: #667085;
+  font-size: 12px;
+  margin-bottom: 3px;
+}
+
+.appro-total-box strong {
+  display: block;
+  color: var(--smmc-green-dark);
+  font-size: 20px;
+}
+
+.appro-total-box > i {
+  font-size: 24px;
+  color: var(--smmc-green);
+}
+
+/* =========================================================
+   MODAL FOOTER
+========================================================= */
+
+.appro-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 25px;
+  padding-top: 20px;
+  border-top: 1px solid #eef0f3;
+}
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 1100px) {
+  .appro-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 800px) {
+  .appro-page {
+    padding: 20px;
+  }
+
+  .appro-page-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .appro-filter-bar {
+    flex-direction: column;
+  }
+
+  .appro-search {
+    max-width: none;
+  }
+
+  .appro-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .appro-form-group.full {
+    grid-column: auto;
+  }
+}
+
+@media (max-width: 600px) {
+  .appro-stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .appro-card-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .appro-modal-overlay {
+    padding: 10px;
+  }
+
+  .appro-modal {
+    max-height: 95vh;
+  }
+
+  .appro-modal form {
+    padding: 18px;
+  }
+}

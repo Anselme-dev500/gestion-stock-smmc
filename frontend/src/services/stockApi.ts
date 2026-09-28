@@ -1,3 +1,4 @@
+import { authFetch } from "./auth";
 import type {
   Article, Categorie, Emplacement, Fournisseur,
   Demande, Entree, Sortie, Retour, DotationDirecte,
@@ -14,7 +15,7 @@ const getAuthHeaders = (): Record<string, string> => {
 
 const customFetch = async <T>(url: string, options: RequestInit = {}): Promise<T> => {
   const headers = { ...getAuthHeaders(), ...(options.headers || {}) };
-  const response = await fetch(`${API_BASE_URL}${url}`, { ...options, headers });
+  const response = await authFetch(`${API_BASE_URL}${url}`, { ...options, headers });
   if (!response.ok) {
     throw new Error(`HTTP Error: ${response.status}`);
   }
@@ -237,3 +238,156 @@ export const stockApi = {
     return customFetch<JournalAudit[]>('/audit/');
   }
 };
+const API_URL = "/api/stock";
+
+/* =========================================================
+   TYPES INVENTAIRE
+========================================================= */
+
+export interface InventairePayload {
+  numero_inventaire: string;
+  date_inventaire: string;
+  id_emplacement?: number | null;
+  observation?: string | null;
+}
+
+export interface InventaireDetailPayload {
+  stock_physique: number;
+  observation?: string | null;
+}
+
+/* =========================================================
+   HELPER API
+========================================================= */
+
+async function request<T>(
+  endpoint: string,
+  options: RequestInit = {}
+): Promise<T> {
+  const response = await authFetch(`${API_URL}${endpoint}`, {
+    headers: {
+      "Content-Type": "application/json",
+      ...(options.headers || {}),
+    },
+    ...options,
+  });
+
+  if (!response.ok) {
+    let message = `Erreur HTTP ${response.status}`;
+
+    try {
+      const data = await response.json();
+
+      if (data?.detail) {
+        message = data.detail;
+      } else if (data?.message) {
+        message = data.message;
+      } else if (data?.error) {
+        message = data.error;
+      }
+    } catch {
+      // réponse non JSON
+    }
+
+    throw new Error(message);
+  }
+
+  if (response.status === 204) {
+    return undefined as T;
+  }
+
+  return response.json();
+}
+
+/* =========================================================
+   INVENTAIRES
+========================================================= */
+
+export async function getInventaires() {
+  const data = await request<any[]>("/inventaires/");
+  return data.map((item) => ({
+    id_inventaire: item.inv_id,
+    numero_inventaire: item.inv_numero,
+    date_inventaire: item.inv_date_debut,
+    statut: (item.inv_statut === "cloture" ? "TERMINE" : "EN_COURS") as "TERMINE" | "EN_COURS" | "ANNULE",
+    utilisateur_nom: item.responsable_nom,
+  }));
+}
+
+/* =========================================================
+   DETAIL D'UN INVENTAIRE
+========================================================= */
+
+export async function getInventaireDetails(idInventaire: number) {
+  const data = await request<any[]>(`/lignes-inventaires/?linv_inventaire=${idInventaire}`);
+  return data.map((item) => ({
+    id_detail: item.linv_id,
+    id_inventaire: item.linv_inventaire,
+    id_article: item.linv_article,
+    code: item.article_code ?? "",
+    designation: item.article_designation,
+    emplacement: item.emplacement_code,
+    stock_theorique: item.linv_quantite_theorique,
+    stock_physique: item.linv_quantite_reelle,
+    ecart: item.ecart,
+    observation: item.linv_note,
+  }));
+}
+
+/* =========================================================
+   CREER UN INVENTAIRE
+========================================================= */
+
+export async function createInventaire(
+  payload: InventairePayload
+) {
+  return request<any>("/inventaires/", {
+    method: "POST",
+    body: JSON.stringify({ inv_numero: payload.numero_inventaire, inv_type: "total" }),
+  });
+}
+
+/* =========================================================
+   MODIFIER LE COMPTAGE D'UN ARTICLE
+========================================================= */
+
+export async function updateInventaireDetail(
+  idDetail: number,
+  payload: InventaireDetailPayload
+) {
+  return request<any>(
+    `/lignes-inventaires/${idDetail}/`,
+    {
+      method: "PATCH",
+      body: JSON.stringify({
+        linv_quantite_reelle: payload.stock_physique,
+        linv_note: payload.observation,
+      }),
+    }
+  );
+}
+
+/* =========================================================
+   TERMINER UN INVENTAIRE
+========================================================= */
+
+export async function terminerInventaire(
+  idInventaire: number
+) {
+  return request<any>(
+    `/inventaires/${idInventaire}/cloturer/`,
+    {
+      method: "POST",
+    }
+  );
+}
+
+/* =========================================================
+   ANNULER UN INVENTAIRE
+========================================================= */
+
+export async function annulerInventaire(
+  _idInventaire: number
+) {
+  throw new Error("L'annulation d'un inventaire n'est pas disponible côté serveur.");
+}
